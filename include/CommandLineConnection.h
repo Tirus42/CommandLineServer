@@ -1,8 +1,10 @@
 #pragma once
 
-#include <WiFiServer.h>
+#include <Client.h>
+
 #include <string>
 #include <future>
+#include <memory>
 
 class CommandLineTCPServer;
 
@@ -10,7 +12,7 @@ class CommandLineConnection {
     private:
         static const size_t LINE_SIZE_LIMIT = 4096;
 
-        mutable WiFiClient stream;
+        mutable std::unique_ptr<Client> stream;
         const CommandLineTCPServer& server;
 
         std::string lineBuffer;
@@ -22,7 +24,7 @@ class CommandLineConnection {
         void printPrompt();
 
     public:
-        CommandLineConnection(WiFiClient stream, const CommandLineTCPServer& server);
+        CommandLineConnection(std::unique_ptr<Client>&& stream, const CommandLineTCPServer& server);
 
         bool update();
 

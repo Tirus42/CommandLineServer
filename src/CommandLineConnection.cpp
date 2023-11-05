@@ -4,18 +4,18 @@
 
 using namespace std::chrono_literals;
 
-CommandLineConnection::CommandLineConnection(WiFiClient stream, const CommandLineTCPServer& server) :
-    stream(stream),
+CommandLineConnection::CommandLineConnection(std::unique_ptr<Client>&& stream_, const CommandLineTCPServer& server) :
+    stream(std::move(stream_)),
     server(server),
     lineBuffer(),
     activeAsyncCommand() {
 
     if (!server.getWelcomeLine().empty()) {
-        stream.printf("%s\n", server.getWelcomeLine().c_str());
+        stream->printf("%s\n", server.getWelcomeLine().c_str());
     }
 
-    stream.printf("You can type your commands, type 'help' for a list of commands\n");
-    stream.printf("===========\n> ");
+    stream->printf("You can type your commands, type 'help' for a list of commands\n");
+    stream->printf("===========\n> ");
 }
 
 static char ReadChar(Stream& stream) {
@@ -37,8 +37,8 @@ bool CommandLineConnection::update() {
         }
     }
 
-    while (int bytesAvailable = stream.available()) {
-        char c = ReadChar(stream);
+    while (int bytesAvailable = stream->available()) {
+        char c = ReadChar(*stream);
 
         if (c == '\n') {
             processLine();
@@ -49,11 +49,11 @@ bool CommandLineConnection::update() {
 
         } else if (c == '\r') {}
         else if (c == 4) {  // EOF
-            stream.printf("Goodbye (EOF)\n");
+            stream->printf("Goodbye (EOF)\n");
             return false;
         } else {
             if (lineBuffer.size() == LINE_SIZE_LIMIT) {
-                stream.printf("== Line buffer size exceeded, aborting ==\n");
+                stream->printf("== Line buffer size exceeded, aborting ==\n");
                 return false;
             }
 
@@ -61,15 +61,15 @@ bool CommandLineConnection::update() {
         }
     }
 
-    return stream.connected();
+    return stream->connected();
 }
 
 bool CommandLineConnection::connected() const {
-    return stream.connected();
+    return stream->connected();
 }
 
 void CommandLineConnection::close() {
-    stream.stop();
+    stream->stop();
 }
 
 static std::vector<std::string> SplitByWhitespace(const std::string& line) {
@@ -119,20 +119,20 @@ bool CommandLineConnection::processCommand(const std::string& cmd) {
     ICommandLineHandler* handler = server.getCommandHandlerByName(tokens[0]);
 
     if (handler == nullptr) {
-        stream.printf("Command '%s'src not found\n", tokens[0].c_str());
+        stream->printf("Command '%s' not found\n", tokens[0].c_str());
         return false;
     }
 
     tokens = std::vector<std::string>(tokens.begin() + 1, tokens.end());
 
     if (handler->executeAsync()) {
-        activeAsyncCommand = std::async(std::launch::async, ThreadFunction, handler, std::ref(stream), std::move(tokens), this);
+        activeAsyncCommand = std::async(std::launch::async, ThreadFunction, handler, std::ref(*stream), std::move(tokens), this);
         return true;
     }
 
-    return handler->execute(stream, tokens, *this);
+    return handler->execute(*stream, tokens, *this);
 }
 
 void CommandLineConnection::printPrompt() {
-    stream.printf("> ");
+    stream->printf("> ");
 }

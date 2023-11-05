@@ -60,7 +60,9 @@ bool CommandLineTCPServer::update() {
 
 void CommandLineTCPServer::acceptNewClients() {
     while (WiFiClient newClient = tcpServer.available()) {
-        clients.emplace_back(std::move(new CommandLineConnection(newClient, *this)));
+        std::unique_ptr<Client> ptr = std::make_unique<WiFiClient>(newClient);
+
+        addCustomClient(std::move(ptr));
     }
 }
 
@@ -95,4 +97,8 @@ ICommandLineHandler* CommandLineTCPServer::getCommandHandlerByName(const std::st
 
 const std::string& CommandLineTCPServer::getWelcomeLine() const {
     return welcomeLine;
+}
+
+void CommandLineTCPServer::addCustomClient(std::unique_ptr<Client>&& newClient) {
+    clients.emplace_back(std::move(new CommandLineConnection(std::move(newClient), *this)));
 }

@@ -70,4 +70,10 @@ class CommandLineTCPServer {
         ICommandLineHandler* getCommandHandlerByName(const std::string& name) const;
 
         const std::string& getWelcomeLine() const;
+
+        /**
+        * Adds a custom client to the active connection list.
+        * Will accept commands from them until connected() returns false.
+        */
+        void addCustomClient(std::unique_ptr<Client>&& newClient);
 };
