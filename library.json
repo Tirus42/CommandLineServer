@@ -1,0 +1,25 @@
+{
+  "name": "CommandLineServer",
+  "version": "1.0.0",
+  "description": "A (TCP) based command line server. Can be used as a simple shell like a telnet connection. Provides a interface to add your custom commands.",
+  "keywords": "remote, command line, wifi, tcp",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/Tirus42/CommandLineServer.git"
+  },
+  "authors":
+  [
+    {
+      "name": "Tirus",
+      "maintainer": true
+    }
+  ],
+  "license": "GPL-3.0-or-later",
+  "homepage": "https://github.com/Tirus42/CommandLineServer",
+  "dependencies": {
+    "WiFi": "~2"
+  },
+  "frameworks": "arduino",
+  "platforms": "espressif32"
+}
