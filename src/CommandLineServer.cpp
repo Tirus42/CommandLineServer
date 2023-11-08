@@ -41,7 +41,7 @@ CommandLineTCPServer::CommandLineTCPServer(uint16_t port, const char* welcomeLin
     tcpServer(port),
     commands(),
     clients(),
-    welcomeLine(welcomeLine) {
+    welcomeLine(welcomeLine ? welcomeLine : "") {
 
     tcpServer.begin();
 
