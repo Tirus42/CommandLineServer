@@ -6,14 +6,14 @@
 #include <future>
 #include <memory>
 
-class CommandLineTCPServer;
+class ICommandLineServer;
 
 class CommandLineConnection {
     private:
         static const size_t LINE_SIZE_LIMIT = 4096;
 
         mutable std::unique_ptr<Client> stream;
-        const CommandLineTCPServer& server;
+        const ICommandLineServer& server;
 
         std::string lineBuffer;
         std::future<bool> activeAsyncCommand;
@@ -24,7 +24,7 @@ class CommandLineConnection {
         void printPrompt();
 
     public:
-        CommandLineConnection(std::unique_ptr<Client>&& stream, const CommandLineTCPServer& server);
+        CommandLineConnection(std::unique_ptr<Client>&& stream, const ICommandLineServer& server);
 
         bool update();
 

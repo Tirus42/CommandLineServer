@@ -3,9 +3,9 @@
 #include "CommandLineConnection.h"
 
 struct HelpCommand : public ICommandLineHandler {
-    const CommandLineTCPServer& server;
+    const ICommandLineServer& server;
 
-    HelpCommand(const CommandLineTCPServer& server) :
+    HelpCommand(const ICommandLineServer& server) :
         server(server) {};
 
     virtual bool execute(Print& output, const std::vector<std::string>& params) override {
@@ -37,25 +37,35 @@ CommandLineTCPServer::TCommand::TCommand(ICommandLineHandler* handler) :
     parameters(),
     handler(std::move(std::unique_ptr<ICommandLineHandler>(handler))) {}
 
-CommandLineTCPServer::CommandLineTCPServer(uint16_t port, const char* welcomeLine) :
-    tcpServer(port),
+CommandLineServer::CommandLineServer(const char* welcomeLine) :
     commands(),
     clients(),
     welcomeLine(welcomeLine ? welcomeLine : "") {
-
-    tcpServer.begin();
-
     registerCommand("help", new HelpCommand(*this));
     registerCommand("quit", new QuitCommand());
 }
 
+CommandLineServer::~CommandLineServer() {}
+
+CommandLineTCPServer::CommandLineTCPServer(uint16_t port, const char* welcomeLine) :
+    tcpServer(port),
+    commandLineServer(std::make_shared<CommandLineServer>(welcomeLine)) {
+
+    tcpServer.begin();
+}
+
 CommandLineTCPServer::~CommandLineTCPServer() {}
 
-bool CommandLineTCPServer::update() {
-    acceptNewClients();
+bool CommandLineServer::update() {
     updateClients();
 
     return !clients.empty();
+}
+
+bool CommandLineTCPServer::update() {
+    acceptNewClients();
+
+    return commandLineServer->update();
 }
 
 void CommandLineTCPServer::acceptNewClients() {
@@ -66,7 +76,7 @@ void CommandLineTCPServer::acceptNewClients() {
     }
 }
 
-void CommandLineTCPServer::updateClients() {
+void CommandLineServer::updateClients() {
     for (size_t i = 0; i < clients.size(); ++i) {
         CommandLineConnection& connection = *clients[i].get();
 
@@ -77,15 +87,15 @@ void CommandLineTCPServer::updateClients() {
     }
 }
 
-bool CommandLineTCPServer::updateClient(CommandLineConnection& connection) const {
+bool CommandLineServer::updateClient(CommandLineConnection& connection) const {
     return connection.update();
 }
 
-void CommandLineTCPServer::registerCommand(const char *name, ICommandLineHandler* commandHandler) {
+void CommandLineServer::registerCommand(const char *name, ICommandLineHandler* commandHandler) {
     commands[name] = new TCommand(commandHandler);
 }
 
-ICommandLineHandler* CommandLineTCPServer::getCommandHandlerByName(const std::string& name) const {
+ICommandLineHandler* CommandLineServer::getCommandHandlerByName(const std::string& name) const {
     const auto& cmdMap = getCommandList();
     auto iter = cmdMap.find(name);
 
@@ -95,10 +105,10 @@ ICommandLineHandler* CommandLineTCPServer::getCommandHandlerByName(const std::st
     return iter->second->handler.get();
 }
 
-const std::string& CommandLineTCPServer::getWelcomeLine() const {
+const std::string& CommandLineServer::getWelcomeLine() const {
     return welcomeLine;
 }
 
-void CommandLineTCPServer::addCustomClient(std::unique_ptr<Client>&& newClient) {
+void CommandLineServer::addCustomClient(std::unique_ptr<Client>&& newClient) {
     clients.emplace_back(std::move(new CommandLineConnection(std::move(newClient), *this)));
 }

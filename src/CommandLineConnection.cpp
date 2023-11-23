@@ -4,7 +4,7 @@
 
 using namespace std::chrono_literals;
 
-CommandLineConnection::CommandLineConnection(std::unique_ptr<Client>&& stream_, const CommandLineTCPServer& server) :
+CommandLineConnection::CommandLineConnection(std::unique_ptr<Client>&& stream_, const ICommandLineServer& server) :
     stream(std::move(stream_)),
     server(server),
     lineBuffer(),
