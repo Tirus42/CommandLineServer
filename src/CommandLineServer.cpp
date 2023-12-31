@@ -54,7 +54,7 @@ CommandLineTCPServer::CommandLineTCPServer(uint16_t port, const char* welcomeLin
     tcpServer.begin();
 }
 
-CommandLineTCPServer::CommandLineTCPServer(uint16_t port, std::shared_ptr<CommandLineServer> existingServer) :
+CommandLineTCPServer::CommandLineTCPServer(uint16_t port, std::shared_ptr<ICommandLineServer> existingServer) :
 	tcpServer(port),
 	commandLineServer(existingServer) {
 

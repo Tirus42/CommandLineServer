@@ -121,7 +121,7 @@ class CommandLineTCPServer : public ICommandLineServer {
     private:
         WiFiServer tcpServer;
 
-        std::shared_ptr<CommandLineServer> commandLineServer;
+        std::shared_ptr<ICommandLineServer> commandLineServer;
 
         void acceptNewClients();
 
@@ -135,7 +135,7 @@ class CommandLineTCPServer : public ICommandLineServer {
         * Constructor, create a new instance by using a existing CommandLineServer instance.
         * All methods of the ICommandLineServer interface will be passed to this instance.
         */
-        CommandLineTCPServer(uint16_t port, std::shared_ptr<CommandLineServer> existingServer);
+        CommandLineTCPServer(uint16_t port, std::shared_ptr<ICommandLineServer> existingServer);
 
         virtual ~CommandLineTCPServer();
 
