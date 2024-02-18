@@ -9,9 +9,24 @@
 
 class CommandLineConnection;
 
+/**
+* Interface for the ICommandLineServer command implementation.
+* Every program must implement one of the execute() methods.
+*
+* Optionally executeAsync() can be overridden to return true.
+* In this case, the command will be executed non-blocking inside a own thread.
+* Use this with care, you are completely responsible for any required synchronization!
+*/
 class ICommandLineHandler {
     public:
-        virtual bool execute(Print& output, const std::vector<std::string>& params) = 0;
+        virtual bool execute(Print& output) {
+            output.printf("Command not implemented properly!\n");
+            return false;
+        }
+
+        virtual bool execute(Print& output, const std::vector<std::string>& /*params*/) {
+			return execute(output);
+        }
 
         virtual bool execute(Print& output, const std::vector<std::string>& params, CommandLineConnection& /*connection*/) {
             return execute(output, params);
